@@ -6,40 +6,109 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-#Instalar y cargar paquetes:
 
+#Instalar y cargar paquetes:
 knitr::opts_chunk$set(echo = TRUE)
 
 install.packages('readxl')
+install.packages('dplyr')
+install.packages('ggplot2')
+
 library('readxl')
+library('dplyr')
+library('ggplot2')
+
 ```
 
 
-```{r , echo=FALSE}
+```{r , echo=FALSE, warning=FALSE}
 
 #Cargar el dataset de excel
-
-
 df <- read_excel("GM-Life Expectancy- Dataset-v14.xlsx", sheet = "data-lex-in-columns", col_names = F)
+dfLarga <- read_excel("GM-Life Expectancy- Dataset-v14.xlsx", sheet = "live unpivot") 
 
 #Formatear los nombres de columnas
 df <- df[-(1),]
 colnames(df) <- as.character(unlist(df[1,]))
+colnames(dfLarga)[4] <- "life_expectancy"
+
+#Columnas en factores
+df$geo <- as.factor(df$geo)
+df$name <- as.factor(df$name)
+
+dfLarga$geo <- as.factor(dfLarga$geo)
+dfLarga$name <- as.factor(dfLarga$name)
+#dfLarga$year <- as.factor(dfLarga$year)
+
+#Valores a 2 decimales:
+df[,-c(1,2)] <- round(df[,-c(1,2)],2)
+dfLarga[,4] <- round(dfLarga[,4],2)
+
+#Se eliminan filas vacias y texto explicativo del dataset
 df <- df[-c(1, 74, 199), ]
 
+#Cambiar esperanza de vida 0 por Na's
+df[df == 0] <- NA
+dfLarga[dfLarga == 0] <- NA
 
-#Rango de esperanza de vida
-range(df[,-c(1,2)][df[,-c(1,2)] != 0], na.rm=T)
+#paises <- c("Antigua and Barbuda", "Argentina", "Bahamas", "Barbados", "Belize", "Bolivia","Brazil", "Canada", "Chile", "Colombia", "Costa Rica", "Cuba", "Dominica", "Ecuador", "El Salvador", "Granada", "Guatemala", "Guyana", "Haiti", "Honduras", "Jamaica", "Mexico", "Nicaragua", "Panama", "Paraguay", "Peru", "Dominica Republic", "St. Vincent and the Grenadines", "St. Lucia", "Suriname", "Trinidad and Tobago", "United States", "Uruguay", "Venezuela", "World", "Asia", "Europe", "The Americas", "Africa")
 
+paises <- c("Argentina", "Bolivia","Brazil", "Canada", "Chile", "Colombia", "Costa Rica", "Cuba", "Ecuador", "El Salvador",  "Guatemala", "Guyana", "Haiti", "Honduras", "Jamaica", "Mexico", "Nicaragua", "Panama", "Paraguay", "Peru", "Dominica Republic", "Suriname", "Trinidad and Tobago", "United States", "Uruguay", "Venezuela", "World", "Asia", "Europe", "The Americas", "Africa")
 
+dfLAmerica <- dfLarga[(dfLarga$name %in% paises),]
+
+dfLAmerica <- dfLAmerica[
+  !is.na(dfLAmerica$year) &
+  dfLAmerica$year >= 1850 &
+  dfLAmerica$year <= 2025,
+]
 
 ```
 
 
 
 ```{r , echo=FALSE}
+#Estadísticas descriptivas del todo el dataset
+summary(dfLarga$`Life expectancy`)
+
+
+#Encontrar los outliers
+
+outliersPorA <- dfLarga %>%
+  group_by(year) %>%
+  mutate(
+    Q1 = quantile(life_expectancy, 0.25, na.rm = TRUE),
+    Q3 = quantile(life_expectancy, 0.75, na.rm = TRUE),
+    IQR_value = IQR(life_expectancy, na.rm = TRUE),
+    lower = Q1 - 1.5 * IQR_value,
+    upper = Q3 + 1.5 * IQR_value,
+    is_outlier = life_expectancy < lower | life_expectancy > upper
+  ) %>%
+  filter(is_outlier == TRUE)
 
 
 ```
+
+```{r}
+
+ggplot(dfLAmerica, aes(x = life_expectancy)) +
+  geom_histogram(aes(y = ..density..), fill = "lightblue", bins = 30, color = "white") +
+  geom_density(color = "red", size = 1.2) +
+  labs(title = "Histograma de Esperanza de vida",
+       x = "Esperanza de Vida en años",
+       y = "Densidad") +
+    scale_x_continuous(breaks = seq(0,100, by = 5))
+
+```
+```{r}
+
+ ggplot(dfLAmerica, aes(x = year, y = life_expectancy)) +
+     geom_line() +
+     facet_wrap(~ name) +
+     labs(title = "Levensverwachting per land")
+
+```
+
+
 
 
