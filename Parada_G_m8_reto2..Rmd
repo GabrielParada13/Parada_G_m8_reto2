@@ -1,0 +1,45 @@
+---
+title: "Parada_G_m8_reto2"
+author: "Gabriel Parada"
+date: "2025-07-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+#Instalar y cargar paquetes:
+
+knitr::opts_chunk$set(echo = TRUE)
+
+install.packages('readxl')
+library('readxl')
+```
+
+
+```{r , echo=FALSE}
+
+#Cargar el dataset de excel
+
+
+df <- read_excel("GM-Life Expectancy- Dataset-v14.xlsx", sheet = "data-lex-in-columns", col_names = F)
+
+#Formatear los nombres de columnas
+df <- df[-(1),]
+colnames(df) <- as.character(unlist(df[1,]))
+df <- df[-c(1, 74, 199), ]
+
+
+#Rango de esperanza de vida
+range(df[,-c(1,2)][df[,-c(1,2)] != 0], na.rm=T)
+
+
+
+```
+
+
+
+```{r , echo=FALSE}
+
+
+```
+
+
