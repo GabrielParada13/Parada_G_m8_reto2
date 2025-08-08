@@ -40,7 +40,7 @@ library(DT)
 df_LA_GDP <- read.csv(here("Datos", "df_LA_GDP.csv"))
 
 # Se filtra el dataset
-df_presente <- df_LA_GDP[,-5] %>%
+df_presente <- df_LA_GDP %>%
   filter(year >= 1875, year <= 2024)
 
 # Se eliminan columnas innecesarias y se cambia el orden de las columnas para que se disponga mejor luego en la sección table
@@ -267,7 +267,7 @@ Column 1{data-orientation=columns}
 
 ```{r}
 
-df_presente2 <- df_LA_GDP[,-5] %>%
+df_presente2 <- df_LA_GDP %>%
   filter(year >= 1875, year <= 2023)
 
 # Plot de la correlación entre GDP per cápita y Esperanza de Vida

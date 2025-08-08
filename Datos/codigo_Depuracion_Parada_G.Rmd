@@ -43,12 +43,7 @@ dfLarga[,4] <- round(dfLarga[,4],2)
 #Cambiar esperanza de vida 0 por Na's
 dfLarga[dfLarga == 0] <- NA
 
-#paises <- c("Antigua and Barbuda", "Argentina", "Bahamas", "Barbados", "Belize", "Bolivia","Brazil", "Canada", "Chile", "Colombia", "Costa Rica", "Cuba", "Dominica", "Ecuador", "El Salvador", "Granada", "Guatemala", "Guyana", "Haiti", "Honduras", "Jamaica", "Mexico", "Nicaragua", "Panama", "Paraguay", "Peru", "Dominica Republic", "St. Vincent and the Grenadines", "St. Lucia", "Suriname", "Trinidad and Tobago", "United States", "Uruguay", "Venezuela", "World", "Asia", "Europe", "The Americas", "Africa")
-
-#paises <- c("Argentina", "Bolivia","Brazil", "Canada", "Chile", "Colombia", "Costa Rica", "Cuba", "Ecuador", "El Salvador",  "Guatemala", "Guyana", "Haiti", "Honduras", "Jamaica", "Mexico", "Nicaragua", "Panama", "Paraguay", "Peru", "Dominica Republic", "Suriname", "Trinidad and Tobago", "United States", "Uruguay", "Venezuela", "World", "Asia", "Europe", "The Americas", "Africa")
-
-# SE HA DECICIDO SOLO TRABAJAR CON LOS PAÍSES GRANDES DE LATINOAMERICA - ESTO LO DEBO REVISAR 
-
+# Se filtran los 10 países de más con más habitantes de Suramérica y las medias de continentes
 paises <- c("Argentina", "Bolivia","Brazil", "Chile", "Colombia", "Ecuador", "Guyana", "Peru","Uruguay", "Venezuela", "World", "Asia", "Europe", "The Americas", "Africa")
 
 dfLAmerica <- dfLarga[(dfLarga$country %in% paises),]
@@ -62,16 +57,6 @@ df_m <- dfLAmerica %>%
 
 mediaSur <- mediaSur %>%
     left_join(df_m, by = "year")
-
-dfLAmerica$siglo <- NULL
-
-dfLAmerica <- dfLAmerica %>%
-  mutate(siglo = case_when(
-    year >= 1800 & year < 1900 ~ 1800,
-    year >= 1900 & year < 2000 ~ 1900,
-    year >= 2000 & year <= 2100 ~ 2000,
-    TRUE ~ NA_real_ 
-  ))
 
 # Nombres de las columnas como texto (porque tienen diferentes formatos)
 colnames(dfGDP) <- as.character(colnames(dfGDP))
@@ -99,101 +84,9 @@ dfGDP_long <- dfGDP_long %>%
 df_LA_GDP <- dfLAmerica %>% 
   left_join(dfGDP_long, by = c("country", "year"))
 
-```
 
-
-
-```{r , echo=FALSE}
-#Estadísticas descriptivas del todo el dataset
-summary(dfLarga$`life_expectancy`)
-
-
-#Encontrar los outliers
-
-outliersPorA <- dfLAmerica %>%
-  group_by(year) %>%
-  mutate(
-    Q1 = quantile(life_expectancy, 0.25, na.rm = TRUE),
-    Q3 = quantile(life_expectancy, 0.75, na.rm = TRUE),
-    IQR_value = IQR(life_expectancy, na.rm = TRUE),
-    lower = Q1 - 1.5 * IQR_value,
-    upper = Q3 + 1.5 * IQR_value,
-    is_outlier = life_expectancy < lower | life_expectancy > upper
-  ) %>%
-  filter(is_outlier == TRUE)
-
-
-```
-
-```{r}
-
-ggplot(df_LA_GDP, aes(x = life_expectancy)) +
-  geom_histogram(aes(y = ..density..), fill = "lightblue", bins = 30, color = "white") +
-  geom_density(color = "red", size = 1.2) +
-  labs(title = "Esperanza de vida en Suramérica periodo 1800 - 2100",
-       x = "Esperanza de Vida en años",
-       y = "Densidad") +
-    scale_x_continuous(breaks = seq(0,100, by = 5))
-
-
-# Solo contar la frecuencia, no la densidad
-
-# ggplot(df_LA_GDP, aes(x = life_expectancy)) +
-#   geom_histogram(fill = "lightblue", bins = 30, color = "white") +
-#   labs(title = "Esperanza de vida en Suramérica periodo 1800 - 2100",
-#        x = "Esperanza de Vida en años",
-#        y = "Frecuencia") +
-#   scale_x_continuous(breaks = seq(0, 100, by = 5))
-
-
-```
-```{r}
-
- ggplot(mediaSur, aes(x = year, y = life_expectancy, color = life_expectancy)) +
-  geom_line(size = 1.2) +
-     geom_line() +
-     facet_wrap(~ name) +
-     labs(title = "Esperanza de vida por año", x = "Año", y = "Esperanza de Vida (años)") +
-    theme_minimal()
-
-```
-```{r}
-
-colores = c("#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#7F7F7F", "#BCBD22", "#17BECF", "#0055A4", "#006400")
-
-
-ggplot(dfLAmerica, aes(x = name, y = life_expectancy)) +
-  geom_boxplot(fill = colores) +
-  labs(title = "Esperanza de vida", 
-       y = "Esperanza de vida", x = "País") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-```
-
-
-```{r}
-
-# Gráfico de líneas para las variables
-
-# Formato largo del df
-df_long <- df_LA_GDP %>%
-  pivot_longer(cols = c(GDP),
-               names_to = "variable",
-               values_to = "value")
-
-df_summary <- df_long %>%
-  group_by(year, variable) %>%
-  summarise(mean_value = mean(value, na.rm = TRUE), .groups = "drop")
-
-ggplot(df_summary, aes(x = year, y = mean_value, color = variable)) +
-  geom_line(size = 1.2) +
-  labs(
-    title = "Media GDP per capita Suramérica (1800–2100)",
-    x = "Año",
-    y = "GDP per cápita ($)",
-    color = "Variable"
-  ) +
-  theme_minimal()
+# Guardar la base de datos depurada
+write.csv(df_LA_GDP,"df_LA_GDP.csv", row.names = F, fileEncoding = "UTF-8")
 
 ```
 
