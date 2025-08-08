@@ -1,12 +1,13 @@
 ---
 title: "Informe M8R2"
+subtitle: "Esperanza de Vida y GDP en Suramérica (1875-2025)"
 author: "Gabriel Parada"
 date: "2025-08-08"
 output: 
     html_document:
-    toc: true
-    number_sections: true
-    toc_float: true
+      toc: TRUE
+      number_sections: TRUE
+      toc_float: TRUE
 ---
 
 ```{r setup, include=FALSE}
@@ -17,6 +18,7 @@ knitr::opts_chunk$set(echo = TRUE, warning =  F, message = F, fig.width = 8, fig
 # Paquetes
 
 ```{r}
+
 library(knitr)
 library(tidyr)
 library(plotly)
@@ -30,6 +32,9 @@ library(plotly)
 library(dplyr)
 library(readr)
 library(DT)
+library(kableExtra)
+
+
 
 ```
 
@@ -38,26 +43,135 @@ library(DT)
 df_LA_GDP <- read.csv(here("Datos", "df_LA_GDP.csv"))
 
 ```
+<br><br>
 
 # Introducción
 
+El presente trabajo investiga el nivel de la **esperanza de vida** desde el año 1875 hasta el 2025 en Suramérica y su relación con el **GDP per cápita (PPP)**. 
+
+```{r, echo=FALSE}
+
+# Crear tabla de conceptos:
+
+tablaConceptos <- data.frame( GDP.per.cápita.PPP = c( "Es una medida de la producción económica per cápita de un país, ajustada por las diferencias en el costo de vida y los tipos de cambio entre países."),
+                              Esperanza.de.Vida = c("La esperanza de vida es el número promedio de años que se espera que viva una persona desde su nacimiento, considerando las condiciones de mortalidad de un período específico.
+"))
+
+kable(tablaConceptos)
+```
+<br><br>
+
+## Sobre los datos
+
+El presente estudio une dos datasets:
+
+1. **Life Expectancy Dataset v14:** Contiene datos sobre la esperanza de vida de todos los países del mundo compilados a partir de múltiples fuentes, principalmente del Instituto de Métricas y Evaluación de la Salud (IHME).
+
+2. **GDP per capita in constant PPP dollars v31(PPP$2021):** Este provee datos históricos sobre el GDP per capita (Producto Interior Bruto per capita en español) para todos los países del mundo.
+
+3. **Notas**: Ambos dataset tienen datos desde 1800 hasta 2100. Pero para este estudio se filtrarán los datos desde **1875 hasta 2025.**
+<br><br>
+
+# Estadísticas Descriptivas del dataset depurado
+
+```{r, echo=FALSE}
+#Tabla de estadísticas descriptivas:
+
+# Se le cambian los nombres a la tabla y se le quita una columna innecesaria
+columnasN <- c("Países", "Año", "Esperanza_de_Vida", "GDP")
+df_tablaI <- df_LA_GDP[-1] %>%
+  filter(year >= 1875, year <= 2025)
+colnames(df_tablaI) <- columnasN
+
+df_tablaI %>% group_by(Países) %>% summarise(min.Esp.Vida=min(Esperanza_de_Vida), max.Esp.Vida = max(Esperanza_de_Vida),
+                                             med.Esp.Vida=mean(Esperanza_de_Vida), min.GDP=min(GDP),
+                                             max.GDP = max(GDP), med.GDP=mean(GDP),
+                                             .groups = "drop") %>% kable(digits = 2) %>% kable_styling("striped")
+```
+<br><br>
+
+- Los `r length(unique(df_LA_GDP$country))` países del estudio han aumentado su esperanza de vida de promedio en 48.2 años en un periodo de `r rango <-range(df_tablaI$Año); abs(rango[1]-rango[2])` años.   
+
+- Los `r length(unique(df_LA_GDP$country))` países del estudio han aumentado su `r colnames(df_tablaI[4]) ` promedio en 21783 dolares en un periodo de `r rango <-range(df_tablaI$Año); abs(rango[1]-rango[2])` años.   
+
+<br><br>
+
+
+```{r, echo=FALSE}
+
+#por completar modificar
+
+mediaSur <- data.frame(geo= rep("sur", 301),name=rep("Suramérica",301),
+                       year=seq(1800, 2100))
+
+df_m <- dfLAmerica %>%
+    group_by(year) %>%
+    summarise(life_expectancy = mean(life_expectancy, na.rm = T))
+
+mediaSur <- mediaSur %>%
+    left_join(df_m, by = "year")
+
+
+
+```
+
+
+
+
+
+<br><br>
+
+# Correlación entre GDP per cápita y Esperanza de Vida Suramérica (1875-2025)
+
+```{r, echo=FALSE, fig.align='center', fig.width = 7, fig.height = 6}
+
+df_presente2 <- df_LA_GDP %>%
+  filter(year >= 1875, year <= 2023)
+
+# Plot de la correlación entre GDP per cápita y Esperanza de Vida
+ggplot(df_presente2, aes(x = GDP, y = life_expectancy)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  
+  labs(x = "GDP per capita", y = "Esperanza de Vida", 
+       title = "Correlación entre GDP per cápita y Esperanza de Vida") 
+
+```
+# 
+
+- Se observa una correlación positiva y fuerte entre el GDP per cápita PPP y la Esperanza de Vida de un país.
+
+- El coeficiente de correlación de Pearson de ambas variables para Suramérica es de: `r cor_Infor <- cor.test(df_presente2$GDP, df_presente2$life_expectancy, method = "pearson"); round(cor_Infor$estimate,2)`.
+
+- Aunque es fuerte y positivo, hay otras variables socio-económicas y ambientales que influyen en la Esperanza de Vida. Por ejemplo, el acceso a la sanidad pública, estilos de vida, nivel educativo.
+
+- Hay outliers, por ejemplo, Argentina tenía entre los años 1900 hasta 1940 una Esperanza de Vida significativamente mayor a la media de Suramérica. De entre 8 y 20 años más.
+
+- Por lo que a pesar de las condiciones económicas, es importante tomar responsabilidad en salud preventiva.
+
+
+
+
+
+
+
 ```{r , echo=FALSE}
 #Estadísticas descriptivas del dataset original
-# summary(df_LA_GDP$`life_expectancy`)
-# 
-# #Encontrar los outliers
-# outliersPorA <- df_LA_GDP %>%
-#   group_by(year) %>%
-#   mutate(
-#     Q1 = quantile(life_expectancy, 0.25, na.rm = TRUE),
-#     Q3 = quantile(life_expectancy, 0.75, na.rm = TRUE),
-#     IQR_value = IQR(life_expectancy, na.rm = TRUE),
-#     lower = Q1 - 1.5 * IQR_value,
-#     upper = Q3 + 1.5 * IQR_value,
-#     is_outlier = life_expectancy < lower | life_expectancy > upper
-#   ) %>%
-#   filter(is_outlier == TRUE)
-# 
+summary(df_LA_GDP$`life_expectancy`)
+
+#Encontrar los outliers
+outliersPorA <- df_LA_GDP %>%
+  group_by(year) %>%
+  mutate(
+    Q1 = quantile(life_expectancy, 0.25, na.rm = TRUE),
+    Q3 = quantile(life_expectancy, 0.75, na.rm = TRUE),
+    IQR_value = IQR(life_expectancy, na.rm = TRUE),
+    lower = Q1 - 1.5 * IQR_value,
+    upper = Q3 + 1.5 * IQR_value,
+    is_outlier = life_expectancy < lower | life_expectancy > upper
+  ) %>%
+  filter(is_outlier == TRUE)
+
 
 ```
 
@@ -73,16 +187,7 @@ df_LA_GDP <- read.csv(here("Datos", "df_LA_GDP.csv"))
 
 
 ```
-```{r}
 
- # ggplot(mediaSur, aes(x = year, y = life_expectancy, color = life_expectancy)) +
- #  geom_line(size = 1.2) +
- #     geom_line() +
- #     facet_wrap(~ name) +
- #     labs(title = "Esperanza de vida por año", x = "Año", y = "Esperanza de Vida (años)") +
- #    theme_minimal()
-
-```
 ```{r}
 
 # colores = c("#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#7F7F7F", "#BCBD22", "#17BECF", "#0055A4", "#006400")
