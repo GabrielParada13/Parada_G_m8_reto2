@@ -1,0 +1,296 @@
+---
+title: "Esperanza de Vida en Suramérica"
+author: "Gabriel Parada" 
+output: 
+  flexdashboard::flex_dashboard:
+    theme:
+        version: 4
+        bootswatch: yeti
+    orientation: rows
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+#install.packages("flexdashboard")
+#install.packages("leaflet")
+#install.packages("sf")
+#install.packages("here")
+#install.packages("DT")
+
+
+library(shiny)
+library(here)
+library(flexdashboard)
+library(leaflet)
+library(sf)
+library(ggplot2)
+library(plotly)
+library(dplyr)
+library(readr)
+library(DT)
+
+```
+
+
+
+```{r }
+
+# Se carga el dataset
+df_LA_GDP <- read.csv(here("Datos", "df_LA_GDP.csv"))
+
+# Se filtra el dataset
+df_presente <- df_LA_GDP[,-5] %>%
+  filter(year >= 1875, year <= 2024)
+
+# Se eliminan columnas innecesarias y se cambia el orden de las columnas para que se disponga mejor luego en la sección table
+df_presente <- df_presente[-1]
+
+df_presente <- df_presente %>%
+    select(year, country, everything())
+
+```
+
+
+Gráficos
+=======================================================================
+
+
+Column {.sidebar data-width=150}
+-----------------------------------------------------------------------
+
+```{r}
+
+# Slider input con botón de play para que las gráficas muestren animaciones a traves del tiempo
+sliderInput("year", "Año",
+  min = min(df_presente$year),
+  max = max(df_presente$year),
+  value = min(df_presente$year),
+  step = 1,
+  animate = animationOptions(interval = 850, loop = TRUE)
+)
+
+
+```
+
+
+
+Column {}
+-----------------------------------------------------------------------
+
+### Esperanza de Vida vs GDP per cápita en Suramérica (1875-2025)
+
+```{r}
+
+# Scatterplot con animación que muestra la relación entre la Esperanza de Vida Media vs GDP per cápita por países 
+renderPlotly({
+  req(input$year)  
+
+  df_filtrado <- df_presente %>%
+    filter(year == input$year)
+
+  plot_ly(
+    data = df_filtrado,
+    x = ~GDP,
+    y = ~life_expectancy,
+    color = ~country,
+    type = 'scatter',
+    mode = 'markers',
+    marker = list(size = 10, opacity = 0.9)
+  ) %>%
+    layout(
+      title = paste("Evolución GDP per capita PPP y Esperanza de Vida -", input$year),
+      xaxis = list(title = "GDP per capita PPP($)", range = c(0,56000)),
+      yaxis = list(title = "Esperanza de Vida (años)", range = c(0,95))
+    )
+})
+```
+
+ROW {data-width=1000, data-height=200}
+-----------------------------------------------------------------------
+
+### KPI Esperanza de vida media en Suramérica por año {.value-box}
+
+```{r}
+
+## KPI Esperanza de vida media en Suramérica por año
+renderValueBox({
+
+df_filtrado <- df_presente %>%
+    filter(year == input$year)
+
+    valueBox(
+      value = paste(round(mean(df_filtrado$life_expectancy, na.rm = TRUE), 0), " años"),
+      caption = paste("Esperanza de vida media Suramérica", input$year),
+      icon = "fa-heart-pulse"
+)
+})
+
+```
+
+### KPI GDP per cápita medio por año Suramérica {.value-box}
+
+```{r}
+
+# KPI GDP per cápita medio por año Suramérica
+renderValueBox({
+
+df_filtrado <- df_presente %>%
+    filter(year == input$year)
+
+    valueBox(
+      value = paste(round(mean(df_filtrado$GDP, na.rm = TRUE), 0), "$"),
+      caption = paste("GDP medio PPP Suramérica", input$year),
+      icon = "fa-dollar-sign"
+)
+    
+})
+```
+
+### Conceptos Clave:
+
+**GDP per cápita PPP:** Es una medida de la producción económica per cápita de un país, ajustada por las diferencias en el costo de vida y los tipos de cambio entre países.
+
+**Esperanza de Vida:** La esperanza de vida es el número promedio de años que se espera que viva una persona desde su nacimiento, considerando las condiciones de mortalidad de un período específico.
+
+
+```{r}
+
+
+
+
+```
+Ranking / Tabla
+=======================================================================
+
+Column {.sidebar data-width=150}
+-----------------------------------------------------------------------
+
+```{r}
+
+# Slider input con botón de play para que las gráficas muestren animaciones a traves del tiempo
+sliderInput("year2", "Año",
+  min = min(df_presente$year),
+  max = max(df_presente$year),
+  value = min(df_presente$year),
+  step = 1,
+  animate = animationOptions(interval = 850, loop = TRUE)
+)
+
+
+```
+
+
+ROW {data-width=600}
+-----------------------------------------------------------------------
+
+### Esperanza de Vida por país por año: 
+
+```{r}
+
+# Gráfica de ranking para la Esperanza de Vida por país por año:  
+
+renderPlotly({
+  # Color por país 
+  all_countries <- df_presente %>% 
+    distinct(country) %>% 
+    arrange(country) %>% 
+    pull(country)
+
+  # Paleta de colores para los países 
+  base_pal <- RColorBrewer::brewer.pal(12, "Paired")
+  full_pal <- colorRampPalette(base_pal)(length(all_countries))
+  col_map  <- setNames(full_pal, all_countries)  
+
+  # Filtrar y colocar colores 
+  df_filtrado <- df_presente %>%
+    filter(year == input$year2) %>%
+    arrange(desc(life_expectancy)) %>%
+    mutate(
+      rank    = row_number(),
+      country = factor(country, levels = unique(country)),
+      col     = unname(col_map[as.character(country)])
+    )
+# Se agrega un poco más de espacio en el eje x para que las etiquetas se vean
+  xmax <- max(df_filtrado$life_expectancy, na.rm = TRUE) * 1.20  
+
+  plot_ly(
+    df_filtrado,
+    x = ~life_expectancy,
+    y = ~country,
+    type = 'bar',
+    orientation = 'h',
+    marker = list(color = ~col),                      #Colores por país 
+    text = ~paste0("#", rank, " · ", round(life_expectancy, 1), " años"),
+    textposition = "outside",                         
+    hovertemplate = "%{y}<br>%{text}<extra></extra>",
+    source = "life_expectancy"
+  ) %>%
+    layout(
+      title = paste("Ranking Esperanza de Vida", input$year2),
+      xaxis = list(title = "Esperanza de Vida (años)", range = c(0, xmax)),
+      yaxis = list(title = "", autorange = "reversed"),  
+      margin = list(l = 140, r = 40, t = 50, b = 40)
+    )
+})
+
+
+
+```
+
+### **Tabla Esperanza de Vida vs GDP per cápita Suramérica: **
+
+```{r}
+
+# Se le cambian los nombres a la tabla
+columnasN <- c("Año", "Países", "Esperanza_de_Vida", "GDP")
+df_tabla <- df_presente
+colnames(df_tabla) <- columnasN
+
+# Tabla interactiva con filtros del dataset
+datatable(df_tabla,
+    caption = "Esperanza de Vida Media vs GDP per cápita Suramérica",
+    rownames = T,
+    filter = "top",
+    options = list(pageLength = 25))
+
+```
+
+
+Conclusiones
+=======================================================================
+
+Column 1{data-orientation=columns}
+-----------------------------------------------------------------------
+
+### Correlación entre GDP per cápita y Esperanza de Vida
+
+```{r}
+
+df_presente2 <- df_LA_GDP[,-5] %>%
+  filter(year >= 1875, year <= 2023)
+
+# Plot de la correlación entre GDP per cápita y Esperanza de Vida
+ggplot(df_presente2, aes(x = GDP, y = life_expectancy)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  
+  labs(x = "GDP per capita", y = "Esperanza de Vida", 
+       title = "Relación entre GDP per cápita y Esperanza de Vida") 
+
+```
+
+### Conclusiones:
+
+- Se observa una correlación positiva y fuerte entre el GDP per cápita PPP y la Esperanza de Vida de un país.
+
+- El coeficiente de correlación de Pearson de ambas variables para Suramérica es de: 0.78.
+
+- Aunque es fuerte y positivo, hay otras variables socio-económicas y ambientales que influyen en la Esperanza de Vida. Por ejemplo, el acceso a la sanidad pública, estilos de vida, nivel educativo.
+
+- Hay outliers, por ejemplo, Argentina tenía entre los años 1900 hasta 1940  una Esperanza de Vida significativamente mayor a la media de Suramérica. De entre 8 y 20 años más.
+
+- Por lo que a pesar de las condiciones económicas, es importante tomar responsabilidad en salud preventiva.
+
+
+
