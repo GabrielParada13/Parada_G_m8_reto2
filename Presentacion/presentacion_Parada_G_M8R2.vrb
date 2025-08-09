@@ -1,11 +1,14 @@
-\frametitle{GDP per cápita PPP por país}
+\frametitle{Referencias}
 
-\begin{itemize}
-\item<1> La tendencia general es que todos los países de Suramérica han aumentado su GDP per cápita PPP.
+{\scriptsize
+- Gapminder Foundation. (2023). Life expectancy at birth (Documentation, version 14) [Dataset]. Gapminder. https://www.gapminder.org/data/documentation/gd004/
 
-\item<2> Venezuela en terminos de GDP per cápita PPP fué entre los años 1950 y finales de la década de 1990 el país con mayor poder adquisitivo. Seguido por una grave crisis económica a inicios de la década del 2010.
+- Gapminder Foundation. (2025). GDP per capita in constant PPP dollars (documentation, version 31, PPP2021) [Dataset]. Gapminder. https://www.gapminder.org/data/documentation/gd001/
 
-\item<3> Guyana ha sido históricamente un país con un bajo GDP Per cápita PPP, pero en 2015 se descubrieron grandes pozos petroleros en sus costas. En el año 2019 empezó la explotación lo que ha aumentado su GDP per cápita PPP de 12800\$ en ese año hasta 72800\$ en el 2025 y se espera que continue este crecimiento económico.
+- Mee, A. (2023, 11 de diciembre). Guyana: Del "boom" petrolero al riesgo de la "maldición de los recursos". Global Affairs and Strategic Studies, Universidad de Navarra. https://www.unav.edu/web/global-affairs/guyana-del-boom-petrolero-al-riesgo-de-la-maldicion-de-los-recursos
 
+- Lodeiro, A. R. (2020). Esperanza de vida al nacer. Contribuciones y desafíos de la microbiología. Revista Argentina de Microbiología, 52 (2), 85–87. Asociación Argentina de Microbiología. https://doi.org/10.1016/j.ram.2020.03.001
 
-\end{itemize}
+- Astorga, P. (2003). La economía venezolana en el siglo XX. Revista de Historia Económica, Año XXI, 623–653. Universidad Carlos III de Madrid. https://e-archivo.uc3m.es/rest/api/core/bitstreams/64513b90-8f71-4cfe-bcd4-6f7e2d8653fb/content
+}
+
