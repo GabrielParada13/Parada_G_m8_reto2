@@ -120,12 +120,14 @@ resumen_pais <- df_tablaI %>%
 
 
 ```{r, echo=FALSE, fig.align='center', fig.width = 7, fig.height = 6}
+# Histograma Esperanza de vida en Suramérica (1875 - 2025): 
 
-#por completar modificar
 
+# Creación de data frame para los datos de Suramérica
 mediaSur <- data.frame(Países=rep("Suramérica",151),
                         Año=seq(1875, 2025))
 
+# Calculo de media de Esperanza de Vida y GDP para Suramérica
 df_m <- df_tablaI %>%
      group_by(Año) %>%
      summarise(Esperanza_de_Vida = mean(Esperanza_de_Vida, na.rm = T),
@@ -134,7 +136,7 @@ df_m <- df_tablaI %>%
 mediaSur <- mediaSur %>%
      left_join(df_m, by = "Año")
 
-
+# Gráfico histograma Esperanza de vida en Suramérica (1875 - 2025)
 ggplot(mediaSur, aes(x = Esperanza_de_Vida)) +
   geom_histogram(aes(y = ..density..), fill = "lightblue", bins = 30, color = "white") +
   geom_density(color = "coral", size = 1.2) +
