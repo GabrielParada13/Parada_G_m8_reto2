@@ -1,6 +1,6 @@
 ---
 title: "Informe M8R2"
-subtitle: "Esperanza de Vida y GDP en Suramérica (1875-2025)"
+subtitle: "Esperanza de Vida y GDP PPP en Suramérica (1875-2025)"
 author: "Gabriel Parada"
 date: "2025-08-08"
 output: 
@@ -68,7 +68,7 @@ El presente estudio une dos datasets:
 
 1. **Life Expectancy Dataset v14:** Contiene datos sobre la esperanza de vida de todos los países del mundo compilados a partir de múltiples fuentes, principalmente del Instituto de Métricas y Evaluación de la Salud (IHME).
 
-2. **GDP per capita in constant PPP dollars v31(PPP$2021):** Este provee datos históricos sobre el GDP per capita (Producto Interior Bruto per capita en español) para todos los países del mundo.
+2. **GDP per capita in constant PPP dollars v31(PPP$2021):** Este provee datos históricos sobre el GDP per capita (Producto Interior Bruto per capita en español) PPP para todos los países del mundo.
 
 3. **Notas**: Ambos dataset tienen datos desde 1800 hasta 2100. Pero para este estudio se filtrarán los datos desde **1875 hasta 2025.**
 <br><br>
@@ -94,7 +94,7 @@ df_tablaI %>% group_by(Países) %>% summarise(min.Esp.Vida=min(Esperanza_de_Vida
 ```{r, echo = F}
 #Tabla de datos para las funciones incrustadas en el texto
 
-# Min, max y diferencia por país Esperanza de Vida y GDP (1875-2025)
+# Min, max y diferencia por país Esperanza de Vida y GDP per cápita PPP (1875-2025)
 resumen_pais <- df_tablaI %>%
     group_by(Países) %>%
     summarise(
@@ -114,7 +114,7 @@ resumen_pais <- df_tablaI %>%
 
 - Los `r length(unique(df_LA_GDP$country))` países del estudio han aumentado su `r colnames(df_tablaI[4]) ` promedio en 21783\$ dolares en un periodo de `r rango <-range(df_tablaI$Año); abs(rango[1]-rango[2])` años. 
 
-- Aunque todos han seguido una tendencia al aumento de la Esperanza de Vida a la vez que aumenta su GDP, se observa que esto no es una relación perfecta, por ejemplo `r resumen_pais$Países[which.max(resumen_pais$max.Esp.Vida)]` es el país que alcanza la mayor Esperanza de Vida con `r max(resumen_pais$max.Esp.Vida)` años, teniendo uno de los GDP per cápita PPP más bajos del grupo. 
+- Aunque todos han seguido una tendencia al aumento de la Esperanza de Vida a la vez que aumenta su GDP per cápita PPP, se observa que esto no es una relación perfecta, por ejemplo `r resumen_pais$Países[which.max(resumen_pais$max.Esp.Vida)]` es el país que alcanza la mayor Esperanza de Vida con `r max(resumen_pais$max.Esp.Vida)` años, teniendo uno de los GDP per cápita PPP más bajos del grupo. 
 
 <br><br>
 
@@ -184,7 +184,7 @@ ggplot(df_tablaI, aes(x = Año, y = Esperanza_de_Vida, color = Países)) +
     labs(
         title = "GDP per cápita PPP por país (1875–2025)",
         x = "Año",
-        y = "GDP por país ($)",
+        y = "GDP por país PPP ($)",
         color = "Países"
     ) +
     scale_x_continuous(breaks = seq(0, max(df_tablaI$Año), by = 25)) 
@@ -210,9 +210,9 @@ ggplot(df_tablaI, aes(x = Año, y = Esperanza_de_Vida, color = Países)) +
 g1 <- ggplot(mediaSur, aes(x = Año, y = GDP, color = Países)) +
   geom_line(size = 1.7) +
   labs(
-    title = "Media GDP per capita Suramérica (1875–2025)",
+    title = "Media GDP per capita PPP Suramérica (1875-2025)",
     x = "Año",
-    y = "GDP per cápita ($)",
+    y = "GDP per cápita PPP ($)",
     color = "Países"
   ) +
     scale_x_continuous(breaks = seq(0, max(mediaSur$GDP), by = 25)) +
@@ -251,25 +251,25 @@ grid.arrange(g1, g2, ncol = 2)
 
 - Luego de los años 1925 empieza un rápido incremento hasta llegar al promedio de `r round(mean(resumen_pais$max.Esp.Vida),2)` de hoy día.
 
-- El GDP muestra una tendencia parecida. Desde 1930 aumenta hasta llegar a una media de `r format(mean(resumen_pais$max.GDP), scientific = FALSE)`\$.
+- El GDP per cápita PPP muestra una tendencia parecida. Desde 1930 aumenta hasta llegar a una media de `r format(mean(resumen_pais$max.GDP), scientific = FALSE)`\$.
 
 
 <br><br>
 
-# Correlación entre GDP per cápita y Esperanza de Vida Suramérica (1875-2025)
+# Correlación entre GDP per cápita PPP y Esperanza de Vida Suramérica (1875-2025)
 
 ```{r, echo=FALSE, fig.align='center', fig.width = 7, fig.height = 6}
 # Preparar datos
 df_presente2 <- df_LA_GDP %>%
   filter(year >= 1875, year <= 2023)
 
-# Plot de la correlación entre GDP per cápita y Esperanza de Vida
+# Plot de la correlación entre GDP per cápita PPP y Esperanza de Vida
 ggplot(df_presente2, aes(x = GDP, y = life_expectancy)) + 
   geom_point(col = "coral2") +
   geom_smooth(method = "lm", se = FALSE, col = "darkturquoise") +
   
-  labs(x = "GDP per capita $", y = "Esperanza de Vida (años)", 
-       title = "Correlación entre GDP per cápita y Esperanza de Vida") 
+  labs(x = "GDP per capita PPP $", y = "Esperanza de Vida (años)", 
+       title = "Correlación entre GDP per cápita PPP y Esperanza de Vida") 
 
 ```
 
@@ -282,3 +282,20 @@ ggplot(df_presente2, aes(x = GDP, y = life_expectancy)) +
 - Hay outliers, por ejemplo, Argentina tenía entre los años 1900 hasta 1940 una Esperanza de Vida significativamente mayor a la media de Suramérica. De entre 8 y 20 años más.
 
 - Por lo que a pesar de las condiciones económicas, es importante tomar responsabilidad en salud preventiva.
+
+<br><br>
+
+# Referencias:
+
+Gapminder Foundation. (2023). Life expectancy at birth (Documentation, version 14) [Dataset]. Gapminder. https://www.gapminder.org/data/documentation/gd004/
+
+Gapminder Foundation. (2025). GDP per capita in constant PPP dollars (documentation, version 31, PPP$2021) [Dataset]. Gapminder. https://www.gapminder.org/data/documentation/gd001/
+
+Mee, A. (2023, 11 de diciembre). Guyana: Del "boom" petrolero al riesgo de la "maldición de los recursos". Global Affairs and Strategic Studies, Universidad de Navarra. https://www.unav.edu/web/global-affairs/guyana-del-boom-petrolero-al-riesgo-de-la-maldicion-de-los-recursos
+
+Lodeiro, A. R. (2020). Esperanza de vida al nacer. Contribuciones y desafíos de la microbiología. Revista Argentina de Microbiología, 52 (2), 85–87. Asociación Argentina de Microbiología. https://doi.org/10.1016/j.ram.2020.03.001
+
+Astorga, P. (2003). La economía venezolana en el siglo XX. Revista de Historia Económica, Año XXI, 623–653. Universidad Carlos III de Madrid. https://e-archivo.uc3m.es/rest/api/core/bitstreams/64513b90-8f71-4cfe-bcd4-6f7e2d8653fb/content
+
+
+
