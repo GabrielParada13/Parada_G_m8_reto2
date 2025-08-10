@@ -27,7 +27,7 @@ El presente estudio une dos Gapminder datasets:
 
 
 
-Objetivos: 
+# Objetivos: 
 
 # Objetivos Generales:
 
@@ -52,7 +52,7 @@ Objetivos:
 
 
 
-Referencias:
+# Referencias:
 
 - Gapminder Foundation. (2023). Life expectancy at birth (Documentation, version 14) [Dataset]. Gapminder. https://www.gapminder.org/data/documentation/gd004/
 
