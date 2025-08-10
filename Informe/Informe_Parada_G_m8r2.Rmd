@@ -18,7 +18,6 @@ knitr::opts_chunk$set(echo = TRUE, warning =  F, message = F, fig.width = 8, fig
 # Paquetes
 
 ```{r}
-
 library(knitr)
 library(tidyr)
 library(plotly)
@@ -34,9 +33,6 @@ library(readr)
 library(DT)
 library(kableExtra)
 library(gridExtra)
-
-
-
 ```
 
 # Cargar los datos
@@ -70,7 +66,7 @@ El presente estudio une dos datasets:
 
 2. **GDP per capita in constant PPP dollars v31(PPP$2021):** Este provee datos históricos sobre el GDP per capita (Producto Interior Bruto per capita en español) PPP para todos los países del mundo.
 
-3. **Notas**: Ambos dataset tienen datos desde 1800 hasta 2100. Pero para este estudio se filtrarán los datos desde **1875 hasta 2025.**
+3. **Notas**: Ambos datasets fueron recopilados por Gapminder, estos tienen datos desde 1800 hasta 2100. Pero para el presente estudio se filtrarán los datos desde **1875 hasta 2025.**
 <br><br>
 
 # Estadísticas Descriptivas 1875-2025
@@ -122,12 +118,11 @@ resumen_pais <- df_tablaI %>%
 ```{r, echo=FALSE, fig.align='center', fig.width = 7, fig.height = 6}
 # Histograma Esperanza de vida en Suramérica (1875 - 2025): 
 
-
 # Creación de data frame para los datos de Suramérica
 mediaSur <- data.frame(Países=rep("Suramérica",151),
                         Año=seq(1875, 2025))
 
-# Calculo de media de Esperanza de Vida y GDP para Suramérica
+# Calculo de media de Esperanza de Vida y GDP per cáoita PPP para Suramérica
 df_m <- df_tablaI %>%
      group_by(Año) %>%
      summarise(Esperanza_de_Vida = mean(Esperanza_de_Vida, na.rm = T),
@@ -149,7 +144,7 @@ ggplot(mediaSur, aes(x = Esperanza_de_Vida)) +
 
 - Al observar la distribución de densidad de la Esperanza de Vida de los países de Suramérica en los últimos `r rango <-range(df_tablaI$Año); abs(rango[1]-rango[2])` años se nota que un tercio de la misma se situa entre los 30 y 37.5 años.
 
-- Luego incrementa rápidamente y se estabiliza un poco entre el rango de 70 a 80 años.
+- Luego incrementa rápidamente y se estabiliza un poco entre el rango de 67 a 80 años.
 
 
 <br><br>
@@ -157,7 +152,7 @@ ggplot(mediaSur, aes(x = Esperanza_de_Vida)) +
 
 ```{r, echo=FALSE, fig.align='center', fig.width = 7, fig.height = 6}
  
-#Plot de Esperanza de vida por países
+#Plot de Esperanza de vida por país
 ggplot(df_tablaI, aes(x = Año, y = Esperanza_de_Vida, color = Países)) +
     geom_line(size = 1.2) +
     labs(
@@ -174,19 +169,19 @@ ggplot(df_tablaI, aes(x = Año, y = Esperanza_de_Vida, color = Países)) +
 
 - Argentina es un outlier gozando de un incremento de la Esperanza de Vida desde 1890. Algunas de las razones fueron: Un crecimiento económico temprano, urbanización controlada y políticas de salud pública pioneras hicieron que cayera de forma drástica la mortalidad infantil.
 
-- Bolivia y Guyana se han quedado rezagados en el aumento de la Esperanza de Vida. Guyana es uncaso interesante porque en los últimos años ha tenido un crecimiento económico acelerado, pero esto no se ha reflejado por los momentos en una mejora de la Esperanza de Vida.
+- Bolivia y Guyana se han quedado rezagados en el aumento de la Esperanza de Vida. Guyana es un caso interesante porque en los últimos años ha tenido un crecimiento económico acelerado, pero esto no se ha reflejado por los momentos en una mejora de la Esperanza de Vida.
 
 <br><br>
 
 
 ```{r, echo=FALSE, fig.align='center', fig.width = 7, fig.height = 6}
-
+# Plot GDP per cápita PPP por país (1875–2025)
  ggplot(df_tablaI, aes(x = Año, y = GDP, color = Países)) +
     geom_line(size = 1.2) +
     labs(
         title = "GDP per cápita PPP por país (1875–2025)",
         x = "Año",
-        y = "GDP por país PPP ($)",
+        y = "GDP per cápita PPP ($)",
         color = "Países"
     ) +
     scale_x_continuous(breaks = seq(0, max(df_tablaI$Año), by = 25)) 
@@ -203,11 +198,9 @@ ggplot(df_tablaI, aes(x = Año, y = Esperanza_de_Vida, color = Países)) +
 <br><br>
 
 
-
-
 ```{r, echo=FALSE,  fig.width = 16, fig.height = 8}
 
-# Gráfico de líneas para las variables
+# Gráfico de líneas Media GDP per capita PPP Suramérica (1875-2025)
 
 g1 <- ggplot(mediaSur, aes(x = Año, y = GDP, color = Países)) +
   geom_line(size = 1.7) +
@@ -227,7 +220,7 @@ g1 <- ggplot(mediaSur, aes(x = Año, y = GDP, color = Países)) +
     axis.text.y = element_text(size = 14)) 
 
 
-# Gráfico de líneas para las variables
+# Gráfico de líneas Media Esperanza de Vida Suramérica (1875–2025)
 
 g2 <- ggplot(mediaSur, aes(x = Año, y = Esperanza_de_Vida, color = Países)) +
   geom_line(size = 1.7,   col = "darkturquoise") +
@@ -246,8 +239,8 @@ g2 <- ggplot(mediaSur, aes(x = Año, y = Esperanza_de_Vida, color = Países)) +
     axis.text.x = element_text(size = 16), 
     axis.text.y = element_text(size = 14))  
 
+# Grid para que aparezcan los dos gráficos uno al lado del otro
 grid.arrange(g1, g2, ncol = 2)
-
 
 ```
 
@@ -262,22 +255,27 @@ grid.arrange(g1, g2, ncol = 2)
 
 ```{r, echo=FALSE, fig.align='center', fig.width = 7, fig.height = 6}
 # Preparar datos
-df_presente2 <- df_LA_GDP %>%
-  filter(year >= 1875, year <= 2023)
+df_presente <- df_LA_GDP %>%
+  filter(year >= 1875, year <= 2025)
 
 # Plot de la correlación entre GDP per cápita PPP y Esperanza de Vida
-ggplot(df_presente2, aes(x = GDP, y = life_expectancy)) + 
-  geom_point(col = "coral2") +
-  geom_smooth(method = "lm", se = FALSE, col = "darkturquoise") +
-  
-  labs(x = "GDP per capita PPP $", y = "Esperanza de Vida (años)", 
+ggplot(df_presente, aes(x = GDP, y = life_expectancy)) + 
+  geom_point(col="coral2") +
+  geom_smooth(method = "lm", se = FALSE) +
+  ylim(0, 100) +
+    scale_x_continuous(
+  breaks = c(10000, 20000, 30000, 40000, 50000, 60000, 70000), 
+  labels = c("10k", "20k", "30k", "40k", "50k", "60k", "70k") 
+) +
+  labs(x = "GDP per capita PPP ($)", y = "Esperanza de Vida (años)", 
        title = "Correlación entre GDP per cápita PPP y Esperanza de Vida") 
+
 
 ```
 
 - Se observa una correlación positiva y fuerte entre el GDP per cápita PPP y la Esperanza de Vida de un país.
 
-- El coeficiente de correlación de Pearson de ambas variables para Suramérica es de: `r cor_Infor <- cor.test(df_presente2$GDP, df_presente2$life_expectancy, method = "pearson"); round(cor_Infor$estimate,2)`.
+- El coeficiente de correlación de Pearson de ambas variables para Suramérica es de: `r cor_Infor <- cor.test(df_presente$GDP, df_presente$life_expectancy, method = "pearson"); round(cor_Infor$estimate,2)`.
 
 - Aunque es fuerte y positivo, hay otras variables socio-económicas y ambientales que influyen en la Esperanza de Vida. Por ejemplo, el acceso a la sanidad pública, estilos de vida, nivel educativo.
 

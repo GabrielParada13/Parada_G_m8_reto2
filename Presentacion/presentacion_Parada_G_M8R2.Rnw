@@ -4,54 +4,56 @@
 \usetheme{madrid}
 \usecolortheme{seahorse}
 
+% Quitar los botones que aparecen por defecto en la parte inferior de las diapositivas
 \setbeamertemplate{navigation symbols}{}
+% Sombrear el texto que no se ha mostrado en la diapositiva
 \setbeamercovered{transparent}
+% Paquetes para que reconozca caraceteres en español
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 
+%comienza la presentación
 \begin{document}
 \SweaveOpts{concordance=TRUE}
 
-
+% Portada (primera diapositiva)
 \begin{frame}
 \frametitle{Esperanza de Vida y GDP PPP en Suramérica (1875-2025)}
 \framesubtitle{Autor: Gabriel Parada}
 Presentación M8R2 - Universidad de Barcelona
-
 \end{frame}
 
 
+% Diapositiva de introducción al tema
 \begin{frame}
 \frametitle{Introducción}
-
 \begin{itemize}
 \item<1-> El presente trabajo investiga el nivel de la \textbf{Esperanza de Vida} desde el año 1875 hasta el 2025 en Suramérica y su relación con el \textbf{GDP per cápita (PPP)}. 
 \item<2-> Se usan dos datasets de Gapminder.
 \end{itemize}
-
 \end{frame}
+
 
 \begin{frame}
 \frametitle{Introducción}
-
 \begin{itemize}
 \item<1> \textbf{Esperanza de Vida:} La esperanza de vida es el número promedio de años que se espera que viva una persona desde su nacimiento, considerando las condiciones de mortalidad de un período específico.
-
 \item<2> \textbf{GDP per cápita PPP:} Es una medida de la producción económica per cápita de un país, ajustada por las diferencias en el costo de vida y los tipos de cambio entre países.	
 \end{itemize}
-
-
 \end{frame}
 
+% Diapositiva Tabla Estadísticas descriptivas
 \begin{frame}[fragile]
 \frametitle{Estadísticas Descriptivas 1875-2025}
-
 {\scriptsize
 <<echo=FALSE, results=tex>>=
+
+# Cargar paquetes
 library(tidyverse)
 library(here)
 library(xtable)
 
+# Cargar dataset
 df_LA_GDP <- read.csv(here("Datos", "df_LA_GDP.csv"))
 
 # Renombrar y filtrar
@@ -60,6 +62,7 @@ df_tablaI <- df_LA_GDP[-1] %>%
   filter(year >= 1875, year <= 2025)
 colnames(df_tablaI) <- columnasN
 
+# Creación de df de tabla
 resumen_pais <- df_tablaI %>%
   group_by(Países) %>%
   summarise(
@@ -72,6 +75,7 @@ resumen_pais <- df_tablaI %>%
     .groups = "drop"
   )
 
+# Imprimir tabla
 print(
   xtable(resumen_pais),
   include.rownames = FALSE
@@ -80,24 +84,23 @@ print(
 }
 \end{frame}
 
+% Explicación de la tabla
 \begin{frame}[fragile]
 \frametitle{Estadísticas Descriptivas 1875-2025}
-
 \begin{itemize}
 \item<1> Los \Sexpr{length(unique(df_LA_GDP$country))} países del estudio han aumentado su esperanza de vida en promedio 
 \Sexpr{as.integer(mean(resumen_pais$diff.E.Vida, na.rm = TRUE))} años en los últimos 
 \Sexpr{diff(range(df_tablaI$Año))} años.
-
 \item<2> Los \Sexpr{length(unique(df_LA_GDP$country))} países del estudio han aumentado su GDP promedio en 
 \Sexpr{format(round(mean(resumen_pais$diff.GDP, na.rm = TRUE), 0), big.mark = ".")} \$
 dólares en un periodo de \Sexpr{diff(range(df_tablaI$Año))} años.
-
 \end{itemize}
 \end{frame}
 
+
+% Diapositiva de gráfico histograma
 \begin{frame}{fragile}
 \frametitle{Histograma Esperanza de vida en Suramérica (1875 - 2025)}
-
 <<echo=FALSE, fig=TRUE, include=TRUE, width=7, height=5>>=
 
 # Histograma Esperanza de vida en Suramérica (1875-2025): 
@@ -126,24 +129,21 @@ ggplot(mediaSur, aes(x = Esperanza_de_Vida)) +
 
 
 @
-
 \end{frame}
 
-\begin{frame}[fragile]
-\frametitle{Estadísticas Descriptivas 1875–2025}
 
+\begin{frame}[fragile]
+\frametitle{Análisis del histograma}
 \begin{itemize}
 \item<1> Al observar la distribución de densidad de la Esperanza de Vida de los países de Suramérica en los últimos \Sexpr{rango <-range(df_tablaI$Año); abs(rango[1]-rango[2])} años se nota que un tercio de la misma se situa entre los 30 y 37.5 años.
-
 \item<2> Luego incrementa rápidamente y se estabiliza un poco entre el rango de 70 a 80 años.
-
 \end{itemize}
 \end{frame}
 
 
+% Diapositiva gráfico de líneas Esperanza de vida por países
 \begin{frame}{fragile}
 \frametitle{Esperanza de vida por país}
-
 <<echo=FALSE, fig=TRUE, include=TRUE, width=7, height=5>>=
 
 #Plot de Esperanza de vida por países
@@ -158,26 +158,23 @@ ggplot(df_tablaI, aes(x = Año, y = Esperanza_de_Vida, color = Países)) +
     scale_x_continuous(breaks = seq(0, max(df_tablaI$Año), by = 25)) 
 
 @
-
 \end{frame}
 
+
+% Diapositiva explicación del gráfico de líneas
 \begin{frame}[fragile]
 \frametitle{Esperanza de vida por país}
-
 \begin{itemize}
 \item<1> Entre 1925 y 1935 se observa un rápido incremento en la Esperanza de Vida.
-
-\item<2> Bolivia y Guyana se han quedado rezagados en el aumento de la Esperanza de Vida. Guyana es uncaso interesante porque en los últimos años ha tenido un crecimiento económico acelerado, pero esto no se ha reflejado por los momentos en una mejora de la Esperanza de Vida.
-
+\item<2> Bolivia y Guyana se han quedado rezagados en el aumento de la Esperanza de Vida. Guyana es un caso interesante porque en los últimos años ha tenido un crecimiento económico acelerado, pero esto no se ha reflejado por los momentos en una mejora de la Esperanza de Vida.
 \item<3> Argentina es un outlier gozando de un incremento de la Esperanza de Vida desde 1890. Algunas de las razones fueron: Un crecimiento económico temprano, urbanización controlada y políticas de salud pública pioneras hicieron que cayera de forma drástica la mortalidad infantil.
-
 \end{itemize}
 \end{frame}
 
 
+% Diapositiva gráfico de líneas GDP per cápita PPP por país (1875–2025)
 \begin{frame}{fragile}
 \frametitle{GDP per cápita PPP por país}
-
 <<echo=FALSE, fig=TRUE, include=TRUE, width=7, height=5>>=
 
  ggplot(df_tablaI, aes(x = Año, y = GDP, color = Países)) +
@@ -185,69 +182,68 @@ ggplot(df_tablaI, aes(x = Año, y = Esperanza_de_Vida, color = Países)) +
     labs(
         title = "GDP per cápita PPP por país (1875–2025)",
         x = "Año",
-        y = "GDP por país PPP ($)",
+        y = "GDP per cápita PPP ($)",
         color = "Países"
     ) +
     scale_x_continuous(breaks = seq(0, max(df_tablaI$Año), by = 25)) 
 
 @
-
 \end{frame}
 
+% Diapositiva explicación gráfico de líneas GDP per cápita PPP por país (1875–2025)
 \begin{frame}[fragile]
 \frametitle{GDP per cápita PPP por país}
-
 \begin{itemize}
 \item<1> La tendencia general es que todos los países de Suramérica han aumentado su GDP per cápita PPP.
-
 \item<2> Venezuela en terminos de GDP per cápita PPP fué entre los años 1950 y finales de la década de 1990 el país con mayor poder adquisitivo. Seguido por una grave crisis económica a inicios de la década del 2010.
-
 \item<3> Guyana ha sido históricamente un país con un bajo GDP Per cápita PPP, pero en 2015 se descubrieron grandes pozos petroleros en sus costas. En el año 2019 empezó la explotación lo que ha aumentado su GDP per cápita PPP de 12800\$ en ese año hasta 72800\$ en el 2025 y se espera que continue este crecimiento económico.
-
 \end{itemize}
 \end{frame}
 
 
+% Diapositiva de gráfico de correlación entre GDP  PPP y Esperanza de Vida
 \begin{frame}{fragile}
 \frametitle{Correlación entre GDP  PPP y Esperanza de Vida Suramérica (1875-2025)}
-
 <<echo=FALSE, fig=TRUE, include=TRUE, width=7, height=5>>=
 
 # Preparar datos
-df_presente2 <- df_LA_GDP %>%
-  filter(year >= 1875, year <= 2023)
+df_presente <- df_LA_GDP %>%
+  filter(year >= 1875, year <= 2025)
 
 # Plot de la correlación entre GDP per cápita PPP y Esperanza de Vida
-ggplot(df_presente2, aes(x = GDP, y = life_expectancy)) + 
-  geom_point(col = "coral2") +
-  geom_smooth(method = "lm", se = FALSE, col = "darkturquoise") +
-  
-  labs(x = "GDP per capita PPP $", y = "Esperanza de Vida (años)", 
+ggplot(df_presente, aes(x = GDP, y = life_expectancy)) + 
+  geom_point(col="coral2") +
+  geom_smooth(method = "lm", se = FALSE) +
+  ylim(0, 100) +
+    scale_x_continuous(
+  breaks = c(10000, 20000, 30000, 40000, 50000, 60000, 70000), 
+  labels = c("10k", "20k", "30k", "40k", "50k", "60k", "70k") 
+) +
+  labs(x = "GDP per capita PPP ($)", y = "Esperanza de Vida (años)", 
        title = "Correlación entre GDP per cápita PPP y Esperanza de Vida") 
 
 @
-
 \end{frame}
 
-\begin{frame}[fragile]
-\frametitle{Correlación entre GDP  PPP y Esperanza de Vida Suramérica (1875-2025)}
 
+% Diapositivas análisis de gráfico de correlación
+\begin{frame}[fragile]
+\frametitle{Correlación entre GDP PPP y Esperanza de Vida Suramérica (1875-2025)}
 \begin{itemize}
 \item<1> Se observa una correlación positiva y fuerte entre el GDP per cápita PPP y la Esperanza de Vida de un país.
 
-\item<2> El coeficiente de correlación de Pearson de ambas variables para Suramérica es de: \Sexpr{cor_Infor <- cor.test(df_presente2$GDP, df_presente2$life_expectancy, method = "pearson"); round(cor_Infor$estimate,2)}.
+\item<2> El coeficiente de correlación de Pearson de ambas variables para Suramérica es de: \Sexpr{cor_Infor <- cor.test(df_presente$GDP, df_presente$life_expectancy, method = "pearson"); round(cor_Infor$estimate,2)}.
 
 \item<3> Aunque es fuerte y positivo, hay otras variables socio-económicas y ambientales que influyen en la Esperanza de Vida. Por ejemplo, el acceso a la sanidad pública, estilos de vida, nivel educativo.
 
 \item<4> Por lo que a pesar de las condiciones económicas, es importante tomar responsabilidad en salud preventiva.
-
 \end{itemize}
 \end{frame}
 
 
+% Diapositiva de Referencias
 \begin{frame}[fragile]
 \frametitle{Referencias}
-
 {\scriptsize
 - Gapminder Foundation. (2023). Life expectancy at birth (Documentation, version 14) [Dataset]. Gapminder. https://www.gapminder.org/data/documentation/gd004/
 
@@ -261,5 +257,4 @@ ggplot(df_presente2, aes(x = GDP, y = life_expectancy)) +
 }
 
 \end{frame}
-
 \end{document}

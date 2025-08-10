@@ -12,12 +12,18 @@ runtime: shiny
 ---
 
 ```{r setup, include=FALSE}
+# Instalar y cargar paquetes
+
 #install.packages("flexdashboard")
 #install.packages("leaflet")
 #install.packages("sf")
 #install.packages("here")
 #install.packages("DT")
-
+#install.packages("shiny")
+#install.packages("readr")
+#install.packages("ggplot2")
+#install.packages("plotly")
+#install.packages("dplyr")
 
 library(shiny)
 library(here)
@@ -29,19 +35,16 @@ library(plotly)
 library(dplyr)
 library(readr)
 library(DT)
-
 ```
 
 
-
 ```{r }
-
 # Se carga el dataset
 df_LA_GDP <- read.csv(here("Datos", "df_LA_GDP.csv"))
 
 # Se filtra el dataset
 df_presente <- df_LA_GDP %>%
-  filter(year >= 1875, year <= 2024)
+  filter(year >= 1875, year <= 2025)
 
 # Se eliminan columnas innecesarias y se cambia el orden de las columnas para que se disponga mejor luego en la sección table
 df_presente <- df_presente[-1]
@@ -154,12 +157,6 @@ df_filtrado <- df_presente %>%
 **Esperanza de Vida:** La esperanza de vida es el número promedio de años que se espera que viva una persona desde su nacimiento, considerando las condiciones de mortalidad de un período específico.
 
 
-```{r}
-
-
-
-
-```
 Ranking / Tabla
 =======================================================================
 
@@ -187,7 +184,6 @@ ROW {data-width=600}
 ### Esperanza de Vida por país por año: 
 
 ```{r}
-
 # Gráfica de ranking para la Esperanza de Vida por país por año:  
 
 renderPlotly({
@@ -214,6 +210,7 @@ renderPlotly({
 # Se agrega un poco más de espacio en el eje x para que las etiquetas se vean
   xmax <- max(df_filtrado$life_expectancy, na.rm = TRUE) * 1.20  
 
+  # Gráfica de ranking de Esperanza de Vida
   plot_ly(
     df_filtrado,
     x = ~life_expectancy,
@@ -238,18 +235,18 @@ renderPlotly({
 
 ```
 
-### **Tabla Esperanza de Vida vs GDP per cápita Suramérica: **
+### **Tabla Esperanza de Vida vs GDP per cápita PPP Suramérica: **
 
 ```{r}
 
-# Se le cambian los nombres a la tabla
+# Se le cambian los nombres a la tabla para que queden en español
 columnasN <- c("Año", "Países", "Esperanza_de_Vida", "GDP")
 df_tabla <- df_presente
 colnames(df_tabla) <- columnasN
 
 # Tabla interactiva con filtros del dataset
 datatable(df_tabla,
-    caption = "Esperanza de Vida Media vs GDP per cápita Suramérica",
+    caption = "Esperanza de Vida Media vs GDP per cápita PPP Suramérica",
     rownames = T,
     filter = "top",
     options = list(pageLength = 25))
@@ -263,20 +260,21 @@ Conclusiones
 Column 1{data-orientation=columns}
 -----------------------------------------------------------------------
 
-### Correlación entre GDP per cápita y Esperanza de Vida
+### Correlación entre GDP per cápita PPP y Esperanza de Vida
 
 ```{r}
 
-df_presente2 <- df_LA_GDP %>%
-  filter(year >= 1875, year <= 2023)
-
-# Plot de la correlación entre GDP per cápita y Esperanza de Vida
-ggplot(df_presente2, aes(x = GDP, y = life_expectancy)) + 
-  geom_point() +
+# Plot de la correlación entre GDP per cápita PPP y Esperanza de Vida
+ggplot(df_presente, aes(x = GDP, y = life_expectancy)) + 
+  geom_point(col="coral2") +
   geom_smooth(method = "lm", se = FALSE) +
-  
-  labs(x = "GDP per capita", y = "Esperanza de Vida", 
-       title = "Relación entre GDP per cápita y Esperanza de Vida") 
+  ylim(0, 100) +
+    scale_x_continuous(
+  breaks = c(10000, 20000, 30000, 40000, 50000, 60000, 70000), 
+  labels = c("10k", "20k", "30k", "40k", "50k", "60k", "70k") 
+) +
+  labs(x = "GDP per capita PPP ($)", y = "Esperanza de Vida (años)", 
+       title = "Correlación entre GDP per cápita PPP y Esperanza de Vida") 
 
 ```
 
@@ -284,7 +282,7 @@ ggplot(df_presente2, aes(x = GDP, y = life_expectancy)) +
 
 - Se observa una correlación positiva y fuerte entre el GDP per cápita PPP y la Esperanza de Vida de un país.
 
-- El coeficiente de correlación de Pearson de ambas variables para Suramérica es de: 0.79.
+- El coeficiente de correlación de Pearson de ambas variables para Suramérica es de: 0.76.
 
 - Aunque es fuerte y positivo, hay otras variables socio-económicas y ambientales que influyen en la Esperanza de Vida. Por ejemplo, el acceso a la sanidad pública, estilos de vida, nivel educativo.
 
